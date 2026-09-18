@@ -1,7 +1,9 @@
 package com.agroventa.authentication.infrastructure.config;
 
 import com.agroventa.authentication.application.service.LoginService;
+import com.agroventa.authentication.application.service.RegisterService;
 import com.agroventa.authentication.application.usecase.LoginUseCase;
+import com.agroventa.authentication.application.usecase.RegisterUseCase;
 import com.agroventa.authentication.domain.port.PasswordHasherPort;
 import com.agroventa.authentication.domain.port.TokenGeneratorPort;
 import com.agroventa.authentication.domain.port.UserQueryPort;
@@ -18,6 +20,13 @@ public class UseCaseConfig {
             TokenGeneratorPort tokenGeneratorPort
     ) {
         return new LoginService(userQueryPort, passwordHasherPort, tokenGeneratorPort);
+    }
+
+    @Bean
+    public RegisterUseCase registerUseCase(
+            UserQueryPort userQueryPort,
+            PasswordHasherPort passwordHasherPort) {
+        return new RegisterService(userQueryPort, passwordHasherPort);
     }
 }
 

@@ -1,12 +1,17 @@
 package com.agroventa.authentication.infrastructure.persistence.adapter;
 
+import com.agroventa.authentication.application.dto.RegistryCommand;
 import com.agroventa.authentication.domain.model.AuthUser;
+import com.agroventa.authentication.domain.model.RegistryUser;
 import com.agroventa.authentication.domain.port.UserQueryPort;
 import com.agroventa.authentication.infrastructure.persistence.entity.UserEntity;
+import com.agroventa.authentication.infrastructure.persistence.mapper.UserMapper;
 import com.agroventa.authentication.infrastructure.persistence.repository.UserR2dbcRepository;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import com.agroventa.authentication.interfaces.rest.dto.RegisterRequest;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -25,12 +30,25 @@ public class UserQueryR2dbcAdapter implements UserQueryPort {
                 .map(this::toDomain);
     }
 
+    @Override
+    public Mono<RegistryUser> createUser(RegistryCommand registryCommand) {
+        return userR2dbcRepository.save(UserMapper.requestToEntityUser(registryCommand))
+                .map(this::entityToRegistryUser);
+    }
+
+    private RegistryUser entityToRegistryUser(UserEntity userEntity) {
+        return new RegistryUser(
+                userEntity.getId(),
+                userEntity.getStatus()
+        );
+    }
+
     private AuthUser toDomain(UserEntity entity) {
         return new AuthUser(
                 entity.getId(),
                 entity.getEmail(),
                 entity.getPasswordHash(),
-                Boolean.TRUE.equals(entity.getEnabled()),
+                Boolean.TRUE.equals(entity.getStatus()),
                 parseRoles(entity.getRoles())
         );
     }

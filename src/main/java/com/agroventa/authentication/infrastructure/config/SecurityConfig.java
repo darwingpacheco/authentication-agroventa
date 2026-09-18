@@ -23,8 +23,9 @@ public class SecurityConfig {
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .authorizeExchange(exchange -> exchange
-                        .pathMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
-                        .pathMatchers(HttpMethod.GET, "/api/v1/auth/capabilities").permitAll()
+                        .pathMatchers(HttpMethod.POST, "/api/agro-venta/v1/auth/login").permitAll()
+                        .pathMatchers(HttpMethod.POST, "/api/agro-venta/v1/auth/register").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/api/agro-venta/v1/auth/capabilities").permitAll()
                         .pathMatchers("/actuator/health", "/actuator/info").permitAll()
                         .anyExchange().denyAll())
                 .build();

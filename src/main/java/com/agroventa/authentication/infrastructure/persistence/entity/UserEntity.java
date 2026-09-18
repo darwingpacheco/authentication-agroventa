@@ -21,14 +21,23 @@ public class UserEntity {
     @Id
     private UUID id;
 
+    @Column("first_name")
+    private String name;
+
+    @Column("last_name")
+    private String lastName;
+
+    @Column("phone")
+    private String phone;
+
     @Column("email")
     private String email;
 
     @Column("password_hash")
     private String passwordHash;
 
-    @Column("enabled")
-    private Boolean enabled;
+    @Column("status")
+    private Boolean status;
 
     @Column("roles")
     private String roles;
