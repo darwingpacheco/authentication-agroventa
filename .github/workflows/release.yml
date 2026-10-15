@@ -1,39 +1,70 @@
-name: 2. Create Semantic Release
+name: 2. Create Release
 
 on:
-  workflow_run:
-    workflows: ["1. Continuous Integration (Build & Test)"]
-    types:
-      - completed
-    branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Tipo de incremento de versión'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   create-release:
-    name: Create GitHub Release
+    name: Create Git Tag and Release
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' }}
-    outputs:
-      tag_name: ${{ steps.tagger.outputs.new_tag }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Generate Semantic Version Tag
-        id: tagger
-        uses: mathieudutour/github-tag-action@v6.2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Calculate Next Version
+        id: semver
+        run: |
+          # Obtener el último tag o defina v0.0.0 si no existe
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
+          echo "Último tag encontrado: $LATEST_TAG"
+          
+          # Remover la 'v' inicial para calcular
+          VERSION="${LATEST_TAG#v}"
+          
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          MAJOR=${MAJOR:-0}
+          MINOR=${MINOR:-0}
+          PATCH=${PATCH:-0}
 
-      - name: Create GitHub Release
+          case "${{ github.event.inputs.version_type }}" in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+          esac
+
+          NEW_TAG="v${MAJOR}.${MINOR}.${PATCH}"
+          echo "NUEVO_TAG=$NEW_TAG"
+          echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
+
+      - name: Create Git Tag & GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.tagger.outputs.new_tag }}
-          name: Release ${{ steps.tagger.outputs.new_tag }}
-          body: ${{ steps.tagger.outputs.changelog }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ env.NEW_TAG }}
+          name: Release ${{ env.NEW_TAG }}
+          generate_release_notes: true
