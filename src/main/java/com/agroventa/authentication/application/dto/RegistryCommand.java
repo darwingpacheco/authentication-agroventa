@@ -5,9 +5,10 @@ public record RegistryCommand(
         String lastName,
         String phone,
         String email,
-        String password
+        String password,
+        String role
 ) {
     public RegistryCommand withPassword(String newPassword) {
-        return new RegistryCommand(name, lastName, phone, email, newPassword);
+        return new RegistryCommand(name, lastName, phone, email, newPassword, role);
     }
 }

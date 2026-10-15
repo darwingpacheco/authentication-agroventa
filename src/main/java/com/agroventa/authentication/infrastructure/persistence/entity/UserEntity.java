@@ -1,14 +1,12 @@
 package com.agroventa.authentication.infrastructure.persistence.entity;
 
-import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
+
+import java.time.OffsetDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -41,5 +39,10 @@ public class UserEntity {
 
     @Column("roles")
     private String roles;
-}
 
+    @Column("created_at")
+    private OffsetDateTime createdAt;
+
+    @Column("updated_at")
+    private OffsetDateTime updatedAt;
+}

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroVenta — Arquitectura del Sistema</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;font-size:13px;line-height:1.6}
+
+        /* Cover */
+        .cover{background:linear-gradient(135deg,#1a3a17 0%,#2d5a27 50%,#4a7c42 100%);color:#fff;padding:72px 64px;min-height:280px;position:relative;overflow:hidden}
+        .cover::after{content:'🌾';position:absolute;right:64px;top:40px;font-size:120px;opacity:.15}
+        .cover-label{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#a5d6a7;font-weight:600;margin-bottom:16px}
+        .cover-title{font-size:42px;font-weight:800;line-height:1.2;margin-bottom:12px}
+        .cover-sub{font-size:16px;color:#c8e6c9;font-weight:300;margin-bottom:32px}
+        .cover-meta{display:flex;gap:32px;flex-wrap:wrap}
+        .cover-meta span{font-size:12px;color:#a5d6a7}
+        .cover-meta strong{color:#fff}
+
+        /* Layout */
+        .page{padding:48px 64px;max-width:1000px;margin:0 auto}
+        @media print{.page{padding:24px 32px}.cover{padding:40px 32px}}
+
+        /* Sections */
+        .section{margin-bottom:48px}
+        .section-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid #2d5a27}
+        .section-icon{width:36px;height:36px;background:#2d5a27;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+        .section-title{font-size:18px;font-weight:700;color:#2d5a27}
+        .section-num{font-size:11px;color:#888;font-weight:400;margin-left:auto}
+
+        /* Cards */
+        .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+        .card{background:#f8fbf8;border:1.5px solid #c8d8c8;border-radius:12px;padding:16px}
+        .card-icon{font-size:24px;margin-bottom:8px}
+        .card-title{font-weight:700;font-size:13px;color:#1a3a17;margin-bottom:4px}
+        .card-desc{font-size:11px;color:#555;line-height:1.5}
+        .card.highlight{background:#f0f7f0;border-color:#2d5a27}
+
+        /* Tables */
+        table{width:100%;border-collapse:collapse;margin-top:12px;font-size:12px}
+        th{background:#2d5a27;color:#fff;padding:10px 12px;text-align:left;font-weight:600}
+        td{padding:9px 12px;border-bottom:1px solid #e8eee8;vertical-align:top}
+        tr:nth-child(even) td{background:#f8fbf8}
+
+        /* Diagram boxes */
+        .arch-diagram{background:#1a3a17;border-radius:16px;padding:32px;color:#fff;margin:16px 0;font-family:monospace;font-size:11px;line-height:1.8;overflow-x:auto}
+        .arch-layer{background:rgba(255,255,255,.07);border-radius:8px;padding:16px;margin:8px 0}
+        .arch-layer-title{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#a5d6a7;margin-bottom:10px;font-family:'Inter',sans-serif;font-weight:600}
+        .arch-boxes{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+        .arch-box{background:rgba(76,175,80,.25);border:1px solid #4caf50;border-radius:6px;padding:8px 14px;font-size:11px;color:#e8f5e9;text-align:center;white-space:nowrap}
+        .arch-box.aws{background:rgba(255,153,0,.15);border-color:#ff9900;color:#ffe0b2}
+        .arch-box.mobile{background:rgba(33,150,243,.15);border-color:#2196f3;color:#bbdefb}
+        .arch-box.serverless{background:rgba(156,39,176,.15);border-color:#9c27b0;color:#e1bee7}
+        .arch-arrow{color:#4caf50;font-size:20px;align-self:center}
+
+        /* Badges */
+        .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;margin:2px}
+        .badge.green{background:#e8f5e9;color:#2d5a27}
+        .badge.orange{background:#fff3e0;color:#e65100}
+        .badge.blue{background:#e3f2fd;color:#1565c0}
+        .badge.purple{background:#f3e5f5;color:#6a1b9a}
+
+        /* Flow */
+        .flow{display:flex;flex-direction:column;gap:0}
+        .flow-step{display:flex;gap:16px;align-items:flex-start}
+        .flow-line{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+        .flow-circle{width:32px;height:32px;border-radius:50%;background:#2d5a27;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+        .flow-connector{width:2px;height:24px;background:#c8d8c8;margin:2px 0}
+        .flow-content{padding:4px 0 16px;flex:1}
+        .flow-title{font-weight:700;font-size:13px;margin-bottom:2px}
+        .flow-desc{font-size:11px;color:#555}
+
+        .divider{height:1px;background:#e8eee8;margin:32px 0}
+        .footer{background:#f8fbf8;border-top:2px solid #2d5a27;padding:24px 64px;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#888}
+        .footer strong{color:#2d5a27}
+        .page-break{page-break-after:always}
+        .two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+        @media(max-width:700px){.two-col{grid-template-columns:1fr}}
+        .info-box{background:#f0f7f0;border-left:4px solid #2d5a27;border-radius:0 8px 8px 0;padding:14px 16px;margin:12px 0;font-size:12px}
+        .info-box strong{color:#2d5a27}
+        .warn-box{background:#fff8e1;border-left:4px solid #f9a825;border-radius:0 8px 8px 0;padding:14px 16px;margin:12px 0;font-size:12px}
+    </style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+    <div class="cover-label">Entregable Técnico — Fase I</div>
+    <div class="cover-title">Arquitectura del Sistema<br>AgroVenta</div>
+    <div class="cover-sub">Plataforma móvil de comercialización agrícola directa</div>
+    <div class="cover-meta">
+        <span><strong>Proyecto:</strong> AgroVenta</span>
+        <span><strong>Autor:</strong> Darwin Andrey Gómez Pacheco — 0191967</span>
+        <span><strong>Asignatura:</strong> Proyecto Integrador III</span>
+        <span><strong>Fecha:</strong> Octubre 2026</span>
+        <span><strong>Universidad:</strong> UFPS Ocaña</span>
+    </div>
+</div>
+
+<div class="page">
+
+    <!-- 1. VISIÓN GENERAL -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-icon">🏗</div>
+            <div class="section-title">1. Visión General de la Arquitectura</div>
+            <span class="section-num">Sección 01</span>
+        </div>
+        <p style="margin-bottom:16px;color:#444">AgroVenta está compuesta por una <strong>aplicación móvil nativa Android</strong> y un <strong>backend de microservicios reactivos</strong> desplegados en Amazon Web Services (AWS). La arquitectura sigue el patrón <em>Hexagonal (Ports &amp; Adapters)</em> en el backend y una comunicación REST con JWT.</p>
+
+        <div class="arch-diagram">
+            <div class="arch-layer">
+                <div class="arch-layer-title">📱 Cliente</div>
+                <div class="arch-boxes">
+                    <div class="arch-box mobile">App Android (Java · minSdk 26)</div>
+                    <div class="arch-arrow">↓ HTTPS</div>
+                </div>
+            </div>
+            <div class="arch-layer">
+                <div class="arch-layer-title">🌐 Capa de Entrada — AWS</div>
+                <div class="arch-boxes">
+                    <div class="arch-box aws">API Gateway HTTP v2</div>
+                    <div class="arch-box aws">WAF · Throttling · CORS</div>
+                    <div class="arch-box aws">VPC Link</div>
+                </div>
+            </div>
+            <div class="arch-layer">
+                <div class="arch-layer-title">⚙️ Microservicios — ECS Fargate</div>
+                <div class="arch-boxes">
+                    <div class="arch-box">auth-service :8080<br><small>Spring WebFlux · Java 21</small></div>
+                    <div class="arch-arrow">│</div>
+                    <div class="arch-box">products-service :8080<br><small>Spring WebFlux · Java 21</small></div>
+                </div>
+            </div>
+            <div class="arch-layer">
+                <div class="arch-layer-title">🗄️ Persistencia — AWS RDS</div>
+                <div class="arch-boxes">
+                    <div class="arch-box aws">Aurora PostgreSQL auth_db</div>
+                    <div class="arch-box aws">Aurora PostgreSQL products_db</div>
+                    <div class="arch-box aws">S3 — Imágenes + Facturas</div>
+                </div>
+            </div>
+            <div class="arch-layer">
+                <div class="arch-layer-title">⚡ Serverless — Lambdas + SQS</div>
+                <div class="arch-boxes">
+                    <div class="arch-box serverless">SQS notifications-queue</div>
+                    <div class="arch-box serverless">Lambda → AWS SES</div>
+                    <div class="arch-box serverless">SQS billing-queue</div>
+                    <div class="arch-box serverless">Lambda → PDF → S3</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. MICROSERVICIOS -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-icon">🔧</div>
+            <div class="section-title">2. Microservicios y Responsabilidades</div>
+            <span class="section-num">Sección 02</span>
+        </div>
+        <div class="card-grid">
+            <div class="card highlight">
+                <div class="card-icon">🔐</div>
+                <div class="card-title">auth-service</div>
+                <div class="card-desc">Registro, login, recuperación de contraseña con código 6 dígitos, emisión de JWT HS256. Base de datos: <code>auth_db</code>.</div>
+            </div>
+            <div class="card highlight">
+                <div class="card-icon">🌿</div>
+                <div class="card-title">products-service</div>
+                <div class="card-desc">Catálogo, publicación de cosechas, órdenes de compra, pagos Wompi, gestión de despachos por camión. Base de datos: <code>products_db</code>.</div>
+            </div>
+            <div class="card">
+                <div class="card-icon">📧</div>
+                <div class="card-title">notifications-lambda</div>
+                <div class="card-desc">Consume eventos de SQS y envía correos transaccionales vía AWS SES: bienvenida, código de reset, confirmación de pago, despacho.</div>
+            </div>
+            <div class="card">
+                <div class="card-icon">🧾</div>
+                <div class="card-title">billing-lambda</div>
+                <div class="card-desc">Genera PDF de factura electrónica con PDFKit, almacena en S3 y notifica al comprador con el link de descarga.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. INFRAESTRUCTURA AWS -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-icon">☁️</div>
+            <div class="section-title">3. Infraestructura AWS (Terraform IaC)</div>
+            <span class="section-num">Sección 03</span>
+        </div>
+        <table>
+            <thead><tr><th>Servicio AWS</th><th>Uso en AgroVenta</th><th>Módulo Terraform</th></tr></thead>
+            <tbody>
+            <tr><td><strong>ECS Fargate</strong></td><td>Orquestación de contenedores Docker sin gestionar servidores. Fargate Spot para reducir costos hasta 70%.</td><td><code>modules/ecs</code></td></tr>
+            <tr><td><strong>Aurora PostgreSQL Serverless v2</strong></td><td>Base de datos relacional reactiva. Escala desde 0.5 hasta 4 ACUs según demanda.</td><td><code>modules/rds</code></td></tr>
+            <tr><td><strong>API Gateway HTTP v2</strong></td><td>Punto de entrada único. Throttling (1000 req/s), CORS, VPC Link al ALB.</td><td><code>modules/api_gateway</code></td></tr>
+            <tr><td><strong>ECR</strong></td><td>Registro privado de imágenes Docker. Lifecycle policy: conserva últimas 10 imágenes.</td><td><code>modules/ecr</code></td></tr>
+            <tr><td><strong>SQS</strong></td><td>Colas notifications y billing con DLQ (máx. 3 reintentos). Desacopla microservicios de Lambdas.</td><td><code>modules/sqs</code></td></tr>
+            <tr><td><strong>Lambda (Node.js 20)</strong></td><td>Funciones serverless activadas por SQS. Facturación por invocación.</td><td><code>modules/lambda</code></td></tr>
+            <tr><td><strong>S3</strong></td><td>Bucket público para imágenes de productos. Bucket privado para facturas PDF (SSE-S3).</td><td><code>modules/s3</code></td></tr>
+            <tr><td><strong>Secrets Manager</strong></td><td>Almacena JWT secret, contraseñas de BD, keys de Wompi. Nunca en variables de entorno en texto plano.</td><td><code>modules/secrets</code></td></tr>
+            <tr><td><strong>IAM (OIDC)</strong></td><td>Roles para ECS Tasks, Lambda y GitHub Actions (sin credenciales estáticas).</td><td><code>modules/iam</code></td></tr>
+            <tr><td><strong>AWS SES</strong></td><td>Envío de correos transaccionales desde la Lambda de notificaciones.</td><td>Configuración manual</td></tr>
+            <tr><td><strong>CloudWatch</strong></td><td>Logs de ECS tasks y API Gateway. Retention: 7 días.</td><td>Incluido en ECS/API GW</td></tr>
+            </tbody>
+        </table>
+        <div class="info-box"><strong>💡 Decisión: ECS Fargate vs EKS.</strong> Se elige ECS Fargate porque con créditos de estudiante AWS no cobra el control plane (EKS cobra ~$72/mes solo por el cluster). ECS Fargate cubre el 100% del caso de uso con menor complejidad operacional.</div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- 4. SEGURIDAD -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-icon">🔒</div>
+            <div class="section-title">4. Modelo de Seguridad</div>
+            <span class="section-num">Sección 04</span>
+        </div>
+        <div class="two-col">
+            <div>
+                <table>
+                    <thead><tr><th>Capa</th><th>Control</th></tr></thead>
+                    <tbody>
+                    <tr><td>Red</td><td>VPC privada, Security Groups, NACLs</td></tr>
+                    <tr><td>Transporte</td><td>HTTPS/TLS 1.3 — ALB + API Gateway</td></tr>
+                    <tr><td>Autenticación</td><td>JWT HS256 (JJWT 0.12.6), expiración 24h</td></tr>
+                    <tr><td>Autorización</td><td>Roles: AGRICULTOR, COMPRADOR, ADMIN</td></tr>
+                    <tr><td>Contraseñas</td><td>BCrypt strength 12</td></tr>
+                    <tr><td>Secretos</td><td>AWS Secrets Manager (KMS)</td></tr>
+                    <tr><td>Datos en reposo</td><td>RDS encryption + S3 SSE-S3</td></tr>
+                    <tr><td>Rate limiting</td><td>API GW: 1000 req/s burst, 500 steady</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <p style="font-weight:700;margin-bottom:10px;color:#2d5a27">Flujo de autenticación JWT</p>
+                <div class="flow">
+                    <div class="flow-step">
+                        <div class="flow-line"><div class="flow-circle">1</div><div class="flow-connector"></div></div>
+                        <div class="flow-content"><div class="flow-title">Login POST /auth/login</div><div class="flow-desc">App envía {email, password}</div></div>
+                    </div>
+                    <div class="flow-step">
+                        <div class="flow-line"><div class="flow-circle">2</div><div class="flow-connector"></div></div>
+                        <div class="flow-content"><div class="flow-title">Validación BCrypt</div><div class="flow-desc">auth-service verifica hash de contraseña</div></div>
+                    </div>
+                    <div class="flow-step">
+                        <div class="flow-line"><div class="flow-circle">3</div><div class="flow-connector"></div></div>
+                        <div class="flow-content"><div class="flow-title">Emisión JWT</div><div class="flow-desc">Claims: sub=userId, email, roles, exp=24h</div></div>
+                    </div>
+                    <div class="flow-step">
+                        <div class="flow-line"><div class="flow-circle">4</div><div class="flow-connector"></div></div>
+                        <div class="flow-content"><div class="flow-title">Token almacenado</div><div class="flow-desc">EncryptedSharedPreferences en el dispositivo</div></div>
+                    </div>
+                    <div class="flow-step">
+                        <div class="flow-line"><div class="flow-circle">5</div></div>
+                        <div class="flow-content"><div class="flow-title">Requests autenticados</div><div class="flow-desc">Authorization: Bearer &lt;token&gt; en cada llamada</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. FLUJO DE NEGOCIO -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-icon">🔄</div>
+            <div class="section-title">5. Flujo de Negocio Principal</div>
+            <span class="section-num">Sección 05</span>
+        </div>
+        <table>
+            <thead><tr><th>Paso</th><th>Actor</th><th>Acción</th><th>Servicio</th><th>Resultado</th></tr></thead>
+            <tbody>
+            <tr><td>1</td><td>Agricultor</td><td>Publica cosecha con precio, cantidad mínima de despacho y ciudades destino</td><td>products-service</td><td>Producto EN_VENTA en catálogo</td></tr>
+            <tr><td>2</td><td>Comprador</td><td>Navega catálogo (sin login) y selecciona producto</td><td>products-service</td><td>Vista detalle con progreso de carga</td></tr>
+            <tr><td>3</td><td>Comprador</td><td>Crea pedido indicando cantidad y ciudad de entrega</td><td>products-service</td><td>Stock reservado 30 min, orden PENDIENTE_PAGO</td></tr>
+            <tr><td>4</td><td>Comprador</td><td>Paga con Wompi (PSE / Nequi / Tarjeta)</td><td>Wompi → webhook</td><td>Pago confirmado, orden PAGADO</td></tr>
+            <tr><td>5</td><td>Sistema</td><td>Lambda genera factura PDF → S3, envía email al comprador</td><td>billing-lambda + SES</td><td>Factura disponible para descarga</td></tr>
+            <tr><td>6</td><td>Agricultor</td><td>Cuando pedidos acumulados ≥ minShipmentQuantity, confirma despacho</td><td>products-service</td><td>Todos los pedidos → DESPACHADO</td></tr>
+            <tr><td>7</td><td>Sistema</td><td>Notifica a cada comprador que su pedido fue despachado</td><td>notifications-lambda</td><td>Email enviado vía SES</td></tr>
+            </tbody>
+        </table>
+        <div class="warn-box"><strong>⚠ Regla de despacho por camión:</strong> El agricultor define un volumen mínimo de carga (ej. 300 kg). Los pedidos se acumulan hasta alcanzar ese mínimo. Solo cuando se completa la carga del camión el agricultor puede confirmar el despacho en bloque, garantizando viabilidad logística y reduciendo costos de flete.</div>
+    </div>
+
+    <!-- 6. CI/CD -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-icon">🚀</div>
+            <div class="section-title">6. Pipeline CI/CD (GitHub Actions)</div>
+            <span class="section-num">Sección 06</span>
+        </div>
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-icon">✅</div>
+                <div class="card-title">Fase 1 — Test</div>
+                <div class="card-desc">mvn test con PostgreSQL en contenedor. Tests unitarios + integración. Fallo bloquea el pipeline.</div>
+            </div>
+            <div class="card">
+                <div class="card-icon">🐳</div>
+                <div class="card-title">Fase 2 — Build Docker</div>
+                <div class="card-desc">mvn package -DskipTests. Docker build → push a ECR con tag SHA + latest.</div>
+            </div>
+            <div class="card">
+                <div class="card-icon">🏗</div>
+                <div class="card-title">Fase 3 — Terraform</div>
+                <div class="card-desc">terraform plan (PR) / terraform apply (main). Infra como código versionado.</div>
+            </div>
+            <div class="card">
+                <div class="card-icon">🌐</div>
+                <div class="card-title">Fase 4 — Deploy ECS</div>
+                <div class="card-desc">aws ecs update-service --force-new-deployment. Rolling update sin downtime.</div>
+            </div>
+        </div>
+        <div class="info-box"><strong>Autenticación OIDC:</strong> GitHub Actions usa OIDC (sin credenciales AWS estáticas) para asumir un rol IAM temporal con permisos mínimos: push a ECR + force-deploy en ECS.</div>
+    </div>
+
+</div><!-- end .page -->
+
+<div class="footer">
+    <div><strong>AgroVenta</strong> — Arquitectura del Sistema</div>
+    <div>Darwin Andrey Gómez Pacheco · 0191967 · Proyecto Integrador III · UFPS Ocaña · 2026</div>
+    <div>Entregable 1 de 4</div>
+</div>
+
+</body>
+</html>

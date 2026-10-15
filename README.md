@@ -77,11 +77,6 @@ docker build -t authentication:local .
 docker run -p 8080:8080 --env-file .env authentication:local
 ```
 
-## Kubernetes
-
-- Manifiestos en `k8s/`.
-- Ajusta `k8s/configmap.yaml` y crea el secret desde `k8s/secret.example.yaml`.
-
 ## CI/CD
 
 Pipeline en `.github/workflows/ci-cd.yml`:

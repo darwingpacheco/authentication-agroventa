@@ -1,0 +1,39 @@
+name: 2. Create Semantic Release
+
+on:
+  workflow_run:
+    workflows: ["1. Continuous Integration (Build & Test)"]
+    types:
+      - completed
+    branches: [ "main" ]
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' }}
+    outputs:
+      tag_name: ${{ steps.tagger.outputs.new_tag }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate Semantic Version Tag
+        id: tagger
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tagger.outputs.new_tag }}
+          name: Release ${{ steps.tagger.outputs.new_tag }}
+          body: ${{ steps.tagger.outputs.changelog }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
