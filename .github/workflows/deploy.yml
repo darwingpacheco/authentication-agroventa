@@ -36,21 +36,11 @@ jobs:
           if [ -n "${{ github.event.inputs.tag }}" ]; then
             TAG="${{ github.event.inputs.tag }}"
           else
+            # Respaldo: consulta el último tag de Git o usa latest
             TAG="latest"
           fi
           echo "DEPLOY_TAG=$TAG" >> $GITHUB_ENV
           echo "Desplegando con tag: $TAG"
-
-      - name: Create Database If Not Exists
-        env:
-          PGPASSWORD: ${{ secrets.DB_PASSWORD }}
-        run: |
-          sudo apt-get update && sudo apt-get install -y postgresql-client
-          psql -h ${{ secrets.DB_HOST }} \
-               -U ${{ secrets.DB_USERNAME }} \
-               -d postgres \
-               -c "SELECT 'CREATE DATABASE authdb' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'authdb')\gexec"
-          echo "Base de datos authdb verificada/creada correctamente."
 
       - name: Download Active Task Definition from ECS
         run: |
