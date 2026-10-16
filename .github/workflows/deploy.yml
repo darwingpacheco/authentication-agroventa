@@ -5,6 +5,7 @@ on:
     workflows: ["3. Build & Publish to ECR"]
     types:
       - completed
+
   workflow_dispatch:
     inputs:
       tag:
@@ -13,7 +14,6 @@ on:
         default: 'latest'
 
 permissions:
-  id-token: write
   contents: read
 
 jobs:
@@ -23,10 +23,11 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
 
     steps:
-      - name: Configure AWS Credentials (OIDC)
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Resolve Target Image Tag
