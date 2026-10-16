@@ -32,7 +32,7 @@ jobs:
         id: semver
         run: |
           # Obtener el último tag o defina v0.0.0 si no existe
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
           echo "Último tag encontrado: $LATEST_TAG"
           
           # Remover la 'v' inicial para calcular
