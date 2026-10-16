@@ -45,7 +45,7 @@ jobs:
       - name: Download Active Task Definition from ECS
         run: |
           aws ecs describe-task-definition \
-            --task-definition ${{ secrets.ECS_TASK_DEFINITION_AUTH }} \
+            --task-definition ${{ secrets.ECS_TASK_DEFINITION }} \
             --query taskDefinition > task-definition.json
 
       - name: Update Container Image Tag in Task Definition
